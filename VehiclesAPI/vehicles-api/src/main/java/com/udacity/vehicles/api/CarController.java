@@ -1,8 +1,8 @@
 package com.udacity.vehicles.api;
 
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.service.CarService;
@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
+
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,10 +51,10 @@ class CarController {
      * @return list of vehicles
      */
     @GetMapping
-    Resources<Resource<Car>> list() {
-        List<Resource<Car>> resources = carService.list().stream().map(assembler::toResource)
+    CollectionModel<EntityModel<Car>> list() {
+        List<EntityModel<Car>> resources = carService.list().stream().map(assembler::toModel)
                 .collect(Collectors.toList());
-        return new Resources<>(resources,
+        return new CollectionModel<>(resources,
                 linkTo(methodOn(CarController.class).list()).withSelfRel());
     }
 
@@ -61,8 +63,8 @@ class CarController {
      * @param id the id number of the given vehicle
      * @return all information for the requested vehicle
      */
-    @GetMapping("/{id}")
-    Resource<Car> get(@PathVariable Long id) {
+    @GetMapping("/get/{id}")
+    EntityModel<Car> get(@PathVariable Long id) {
         /**
          * TODO: Use the `findById` method from the Car Service to get car information.
          * TODO: Use the `assembler` on that car and return the resulting output.
@@ -71,7 +73,7 @@ class CarController {
         //done
 
         Car currentCar = carService.findById(id);
-        return assembler.toResource(currentCar);
+        return assembler.toModel(currentCar);
     }
 
     /**
@@ -80,7 +82,7 @@ class CarController {
      * @return response that the new vehicle was added to the system
      * @throws URISyntaxException if the request contains invalid fields or syntax
      */
-    @PostMapping
+    @PostMapping("/save")
     ResponseEntity<?> post(@Valid @RequestBody Car car) throws URISyntaxException {
         /**
          * TODO: Use the `save` method from the Car Service to save the input car.
@@ -91,8 +93,10 @@ class CarController {
 
         Car currentCar = this.carService.save(car);
 
-        Resource<Car> resource = assembler.toResource(currentCar);
-        return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
+        EntityModel<Car> model = assembler.toModel(currentCar);
+        return ResponseEntity
+                .created(new URI(model.getLink("self").orElse(new Link("self")).getHref()))
+                .body(model);
     }
 
     /**
@@ -101,7 +105,7 @@ class CarController {
      * @param car The updated information about the related vehicle.
      * @return response that the vehicle was updated in the system
      */
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     ResponseEntity<?> put(@PathVariable Long id, @Valid @RequestBody Car car) {
         /**
          * TODO: Set the id of the input car object to the `id` input.
@@ -114,7 +118,7 @@ class CarController {
         car.setId(id);
         Car currentCar = this.carService.save(car); ;
 
-        Resource<Car> resource = assembler.toResource(currentCar);
+        EntityModel<Car> resource = assembler.toModel(currentCar);
         return ResponseEntity.ok(resource);
     }
 
@@ -123,7 +127,7 @@ class CarController {
      * @param id The ID number of the vehicle to remove.
      * @return response that the related vehicle is no longer in the system
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     ResponseEntity<?> delete(@PathVariable Long id) {
         /**
          * TODO: Use the Car Service to delete the requested vehicle.

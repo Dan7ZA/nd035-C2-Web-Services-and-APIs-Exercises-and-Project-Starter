@@ -19,7 +19,7 @@ public class PricingService {
      */
     private static final Map<Long, Price> PRICES = LongStream
             .range(1, 20)
-            .mapToObj(i -> new Price("USD", randomPrice(), i))
+            .mapToObj(i -> new Price(i, "USD", randomPrice(), i))
             .collect(Collectors.toMap(Price::getVehicleId, p -> p));
 
     /**
@@ -29,12 +29,15 @@ public class PricingService {
      * @throws PriceException vehicleID was not found
      */
     public static Price getPrice(Long vehicleId) throws PriceException {
+//
+//        if (!PRICES.containsKey(vehicleId)) {
+//            throw new PriceException("Cannot find price for Vehicle " + vehicleId);
+//        }
+//
+//        return PRICES.get(vehicleId);
 
-        if (!PRICES.containsKey(vehicleId)) {
-            throw new PriceException("Cannot find price for Vehicle " + vehicleId);
-        }
-
-        return PRICES.get(vehicleId);
+        //no longer needed as service converted to REST, placeholder method instead
+        return new Price();
     }
 
     /**

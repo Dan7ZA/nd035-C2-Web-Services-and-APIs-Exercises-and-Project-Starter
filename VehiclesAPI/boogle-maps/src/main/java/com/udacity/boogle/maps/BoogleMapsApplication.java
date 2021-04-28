@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BoogleMapsApplication {
 
 	public static void main(String[] args) {
-		System.getProperties().put( "server.port", 9191 );
+		//System.getProperties().put( "server.port", 9191 );
 		SpringApplication.run(BoogleMapsApplication.class, args);
 	}
 
